@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-// register controller
+// register controller - create
 const registerController = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -53,6 +53,7 @@ const registerController = async (req, res) => {
   }
 };
 
+// login controller
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -119,4 +120,124 @@ const loginController = async (req, res) => {
   }
 };
 
-export { registerController, loginController };
+// fetch all uesrs - read
+const fetchAllUsersController = async (req, res) => {
+  try {
+    const users = await User.find();
+
+    const noOfUsers = await User.countDocuments();
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No users found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "users found",
+      total: noOfUsers,
+      data: users,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "server error",
+      err: err.message,
+    });
+  }
+};
+
+// fetch a user by id - read (using params)
+const fetchAUserByIdAndParamsController = async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    const user = await User.findById(uid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No user found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "user found",
+      data: user,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+};
+
+// fetch a user by id - read (using params)
+const fetchAUserByIdAndQueryController = async (req, res) => {
+  try {
+    const { uid } = req.query;
+
+    const user = await User.findById(uid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No user found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "user found",
+      data: user,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+};
+
+// fetch a user using other details - without id - read
+const fetchAUserController = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No user found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "user found",
+      data: user,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+};
+
+export {
+  registerController,
+  loginController,
+  fetchAllUsersController,
+  fetchAUserByIdAndParamsController,
+  fetchAUserByIdAndQueryController,
+  fetchAUserController,
+};
