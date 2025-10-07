@@ -5,6 +5,7 @@ import colors from "colors";
 import morgan from "morgan";
 import cors from "cors";
 import UserRoutes from "./routes/user.route.js";
+import cookieParser from "cookie-parser";
 
 // express initialization
 const app = express();
@@ -23,6 +24,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan());

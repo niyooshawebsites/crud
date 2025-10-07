@@ -93,6 +93,7 @@ const loginController = async (req, res) => {
     const userDetails = {
       id: user._id,
       email: user.email,
+      role: user.role,
     };
 
     const authToken = await jwt.sign(userDetails, process.env.JWT_SECRET, {
@@ -106,10 +107,14 @@ const loginController = async (req, res) => {
       path: "/",
     });
 
+    // authorization....
+    // saving the user in the requrest object for isAdmin middleware access
+    req.user = userDetails;
+
     return res.status(200).json({
       success: true,
       message: "Logged in successfully",
-      data: { id: user._id, email: user.email },
+      data: userDetails,
     });
   } catch (err) {
     return res.status(500).json({
@@ -123,6 +128,15 @@ const loginController = async (req, res) => {
 // fetch all uesrs - read
 const fetchAllUsersController = async (req, res) => {
   try {
+    const { role } = req.user;
+
+    if (role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: "You are not authorized to access this information",
+      });
+    }
+
     const users = await User.find();
 
     const noOfUsers = await User.countDocuments();
@@ -233,6 +247,115 @@ const fetchAUserController = async (req, res) => {
   }
 };
 
+// update a user
+const updateAUserController = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { password } = req.body;
+
+    if (!uid) {
+      return res.status(400).json({
+        success: false,
+        message: "User id is required",
+      });
+    }
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required",
+      });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // const user = await User.findOne({ _id: uid });
+    // const user = await User.findById(uid);
+
+    const user = await User.findByIdAndUpdate(
+      uid,
+      {
+        password: hashedPassword,
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User details updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      err: err.message,
+    });
+  }
+};
+
+// delete a user
+const deleteAUserController = async (req, res) => {
+  try {
+    const { uid } = req.query;
+
+    if (!uid) {
+      return res.status(400).json({
+        success: false,
+        message: "User id is required",
+      });
+    }
+
+    await User.findByIdAndDelete(uid);
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "server error",
+      err: err.message,
+    });
+  }
+};
+
+// delete a user without query or params
+const deleteUserController = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "User email is required",
+      });
+    }
+
+    await User.deleteOne({ email });
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "server error",
+      err: err.message,
+    });
+  }
+};
+
 export {
   registerController,
   loginController,
@@ -240,4 +363,7 @@ export {
   fetchAUserByIdAndParamsController,
   fetchAUserByIdAndQueryController,
   fetchAUserController,
+  updateAUserController,
+  deleteAUserController,
+  deleteUserController,
 };
