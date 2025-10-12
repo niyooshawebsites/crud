@@ -125,18 +125,30 @@ const loginController = async (req, res) => {
   }
 };
 
+const logoutController = async (req, res) => {
+  try {
+    res.clearCookie("authToken", {
+      httpOnly: process.env.COOKIE_HTTPONLY,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error!",
+      err: err.message,
+    });
+  }
+};
+
 // fetch all uesrs - read
 const fetchAllUsersController = async (req, res) => {
   try {
-    const { role } = req.user;
-
-    if (role !== "admin") {
-      return res.status(401).json({
-        success: false,
-        message: "You are not authorized to access this information",
-      });
-    }
-
     const users = await User.find();
 
     const noOfUsers = await User.countDocuments();
@@ -366,4 +378,5 @@ export {
   updateAUserController,
   deleteAUserController,
   deleteUserController,
+  logoutController,
 };

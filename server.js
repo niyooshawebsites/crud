@@ -5,6 +5,8 @@ import colors from "colors";
 import morgan from "morgan";
 import cors from "cors";
 import UserRoutes from "./routes/user.route.js";
+import ProductRotues from "./routes/product.route.js";
+import OrderRotues from "./routes/order.route.js";
 import cookieParser from "cookie-parser";
 
 // express initialization
@@ -30,6 +32,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan());
 
 app.use(process.env.API_VERSION, UserRoutes);
+app.use(process.env.API_VERSION, ProductRotues);
+app.use(process.env.API_VERSION, OrderRotues);
 
 // listen on PORT
 app.listen(PORT, () => {

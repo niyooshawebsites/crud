@@ -13,6 +13,16 @@ const isAdmin = (req, res, next) => {
     }
 
     const userDetails = jwt.verify(authToken, process.env.JWT_SECRET);
+
+    const { role } = userDetails;
+
+    if (role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: "You are not authorized to access this information",
+      });
+    }
+
     req.user = userDetails;
     next();
   } catch (err) {
