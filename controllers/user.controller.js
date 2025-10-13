@@ -149,7 +149,12 @@ const logoutController = async (req, res) => {
 // fetch all uesrs - read
 const fetchAllUsersController = async (req, res) => {
   try {
-    const users = await User.find();
+    // const { page, limit } = req.query;
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit); // 10
+    const skip = (page - 1) * limit;
+
+    const users = await User.find().sort({ createdAt: -1 });
 
     const noOfUsers = await User.countDocuments();
 

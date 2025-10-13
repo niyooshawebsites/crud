@@ -2,6 +2,7 @@ import Order from "../models/order.model.js";
 
 const createOrderController = async (req, res) => {
   try {
+    console.log(req.body);
     const { product, user } = req.body;
 
     if (!product) {
