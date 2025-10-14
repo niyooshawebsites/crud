@@ -146,17 +146,19 @@ const logoutController = async (req, res) => {
   }
 };
 
-// fetch all uesrs - read
+// fetch all uesrs - read with pagination
 const fetchAllUsersController = async (req, res) => {
   try {
-    // const { page, limit } = req.query;
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit); // 10
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 2;
     const skip = (page - 1) * limit;
 
-    const users = await User.find().sort({ createdAt: -1 });
+    const totalUsers = await User.countDocuments();
 
-    const noOfUsers = await User.countDocuments();
+    const users = await User.find()
+      .limit(limit)
+      .skip(skip)
+      .sort({ createdAt: -1 });
 
     if (users.length === 0) {
       return res.status(404).json({
@@ -168,8 +170,15 @@ const fetchAllUsersController = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "users found",
-      total: noOfUsers,
       data: users,
+      pagination: {
+        totalUsers,
+        limit,
+        page,
+        totalPages: Math.ceil(totalUsers / limit),
+        hasNextPage: page * limit < totalUsers,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (err) {
     return res.status(500).json({
