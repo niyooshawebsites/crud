@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/mail.utils.js";
 
 // register controller - create
 const registerController = async (req, res) => {
@@ -38,6 +39,12 @@ const registerController = async (req, res) => {
       email,
       password: hashedPassword,
     }).save();
+
+    const subject = "Registration Email";
+    const msg = `<h1>Welcome to Busy Store</h1><p>Thank your resitering to your service</p><a style="background-color: lime; padding: 5px 10px; border-radius: 10px" href="https://youtube.com">Login now</a>`;
+
+    // send registration email to user
+    sendEmail(subject, msg, newUser.email);
 
     return res.status(201).json({
       success: true,
