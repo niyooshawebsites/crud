@@ -13,8 +13,10 @@ import {
   logoutController,
 } from "../controllers/user.controller.js";
 import isAdmin from "../middlewares/auth.middleware.js";
+import upload from "../middlewares/upload.middleware.js";
 
-router.post("/register", registerController);
+router.post("/register", upload, registerController);
+
 router.post("/login", loginController);
 
 // protecting route using isAdmin middleware

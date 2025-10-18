@@ -5,6 +5,8 @@ import { sendEmail } from "../utils/mail.utils.js";
 
 // register controller - create
 const registerController = async (req, res) => {
+  console.log(req.files);
+
   try {
     const { email, password } = req.body;
 
