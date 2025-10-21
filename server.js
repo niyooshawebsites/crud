@@ -35,6 +35,27 @@ app.use(process.env.API_VERSION, UserRoutes);
 app.use(process.env.API_VERSION, ProductRotues);
 app.use(process.env.API_VERSION, OrderRotues);
 
+// error handling middleware
+app.use((error, req, res, next) => {
+  if (error instanceof MulterError) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      res.status(400).json({
+        success: false,
+        message: "The file is too large",
+        err: err.message,
+      });
+    }
+
+    if (error.code === "LIMIT_FILE_COUNT") {
+      res.status(400).json({
+        success: false,
+        message: "Too many files",
+        err: err.message,
+      });
+    }
+  }
+});
+
 // listen on PORT
 app.listen(PORT, () => {
   console.log(colors.bgYellow(`The app is running on port ${PORT}`));

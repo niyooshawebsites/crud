@@ -1,0 +1,14 @@
+**** upload middleware ****
+npm i multer
+
+**** core aws page ******
+npm i @aws-sdk/client-s3
+
+***** for unique image name *****
+npm i uuid
+
+***** for image resizing *****
+npm i sharp
+
+******* for presigned urls ********
+npm i @aws-sdk/s3-request-presigner

@@ -23,10 +23,10 @@ router.post("/login", loginController);
 router.get("/fetch-all-users", isAdmin, fetchAllUsersController);
 
 // getting user id by params
-router.get("/fetch-user/:uid", isAdmin, fetchAUserByIdAndParamsController);
+router.get("/fetch-user/:uid", fetchAUserByIdAndParamsController);
 
 // getting user id by query
-router.get("/fetch-user", isAdmin, fetchAUserByIdAndQueryController);
+router.get("/fetch-user", fetchAUserByIdAndQueryController);
 
 // getting a user without params and query - body
 router.get("/fetch-a-user", isAdmin, fetchAUserController);
@@ -35,10 +35,10 @@ router.get("/fetch-a-user", isAdmin, fetchAUserController);
 router.patch("/update-user/:uid", isAdmin, updateAUserController);
 
 // deleting a user - by id
-router.delete("/delete-a-user", isAdmin, deleteAUserController);
+router.delete("/delete-a-user", deleteAUserController);
 
 // deleting user - by email
-router.delete("/delete-user", isAdmin, deleteUserController);
+router.delete("/delete-user", deleteUserController);
 
 router.get("/logout", logoutController);
 

@@ -2,11 +2,33 @@ import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/mail.utils.js";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { v4 } from "uuid";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+const bucketAccessKey = process.env.AWS_ACCESS_KEY;
+const bucketSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: bucketAccessKey,
+    secretAccessKey: bucketSecretAccessKey,
+  },
+  region: bucketRegion,
+});
 
 // register controller - create
 const registerController = async (req, res) => {
-  console.log(req.files);
-
   try {
     const { email, password } = req.body;
 
@@ -26,7 +48,6 @@ const registerController = async (req, res) => {
 
     // check if the user already exists
     const user = await User.findOne({ email });
-
     if (user) {
       return res.status(409).json({
         success: false,
@@ -34,12 +55,33 @@ const registerController = async (req, res) => {
       });
     }
 
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required for registration",
+      });
+    }
+
+    // uplaoding images on AWS
+    const fileName = `${v4()}`;
+
+    const params = {
+      Bucket: bucketName,
+      Key: fileName,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    };
+
+    const command = new PutObjectCommand(params);
+    await s3.send(command);
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await new User({
       email,
       password: hashedPassword,
+      avatar: fileName,
     }).save();
 
     const subject = "Registration Email";
@@ -212,10 +254,23 @@ const fetchAUserByIdAndParamsController = async (req, res) => {
       });
     }
 
+    const params = {
+      Bucket: bucketName,
+      Key: user.avatar,
+    };
+
+    const command = new GetObjectCommand(params);
+    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+    user.imageUrl = url;
+
     return res.status(200).json({
       success: true,
       message: "user found",
-      data: user,
+      data: {
+        _id: user._id,
+        email: user.email,
+        imageUrl: url,
+      },
     });
   } catch (err) {
     return res.status(500).json({
@@ -240,10 +295,22 @@ const fetchAUserByIdAndQueryController = async (req, res) => {
       });
     }
 
+    const params = {
+      Bucket: bucketName,
+      Key: user.avatar,
+    };
+
+    const command = new GetObjectCommand(params);
+    const imageUrl = await getSignedUrl(s3, command, { expiresIn: 15 });
+
     return res.status(200).json({
       success: true,
       message: "user found",
-      data: user,
+      data: {
+        _id: user._id,
+        email: user.email,
+        avatar: imageUrl,
+      },
     });
   } catch (err) {
     return res.status(500).json({
@@ -349,11 +416,28 @@ const deleteAUserController = async (req, res) => {
       });
     }
 
+    const user = await User.findById(uid);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const params = {
+      Bucket: bucketName,
+      Key: user.avatar,
+    };
+
+    const command = new DeleteObjectCommand(params);
+    await s3.send(command);
+
     await User.findByIdAndDelete(uid);
 
     return res.status(200).json({
       success: true,
-      message: "User deleted successfully",
+      message: "User details deleted successfully",
     });
   } catch (err) {
     return res.status(500).json({
