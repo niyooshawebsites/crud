@@ -46,24 +46,24 @@ app.use(process.env.API_VERSION, ProductRotues);
 app.use(process.env.API_VERSION, OrderRotues);
 
 // error handling middleware
-app.use((error, req, res, next) => {
-  if (error instanceof MulterError) {
-    if (error.code === "LIMIT_FILE_SIZE") {
-      res.status(400).json({
-        success: false,
-        message: "The file is too large",
-        err: err.message,
-      });
-    }
+// app.use((error, req, res, next) => {
+//   if (error instanceof MulterError) {
+//     if (error.code === "LIMIT_FILE_SIZE") {
+//       res.status(400).json({
+//         success: false,
+//         message: "The file is too large",
+//         err: err.message,
+//       });
+//     }
 
-    if (error.code === "LIMIT_FILE_COUNT") {
-      res.status(400).json({
-        success: false,
-        message: "Too many files",
-        err: err.message,
-      });
-    }
-  }
-});
+//     if (error.code === "LIMIT_FILE_COUNT") {
+//       res.status(400).json({
+//         success: false,
+//         message: "Too many files",
+//         err: err.message,
+//       });
+//     }
+//   }
+// });
 
 export default app;
