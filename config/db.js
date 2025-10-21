@@ -25,10 +25,15 @@ const connection = async () => {
     return;
   }
   try {
+    console.log("Conection string", process.env.MONGO_URI);
     const connectionString = process.env.MONGO_URI;
+
     const connectDB = await mongoose.connect(`${connectionString}`);
 
-    isConnected = connectDB.connnections[0].readyState;
+    console.log(connectDB);
+    console.log(connectDB.connections);
+
+    isConnected = connectDB.connections[0].readyState;
     console.log(colors.magenta("Successfully created a new connection"));
   } catch (err) {
     console.error(colors.bgRed(`DB connection failed: ${err.message}`));
