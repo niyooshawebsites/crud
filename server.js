@@ -14,10 +14,10 @@ const app = express();
 
 // configuration
 dotenv.config();
-const PORT = process.env.PORT || 8500;
+// const PORT = process.env.PORT || 8500;
 
 // start the connection
-connection();
+// connection();
 
 // middlewares
 app.use(
@@ -30,6 +30,16 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan());
+
+// DB connection middleware (ensures DB is connected before routes)
+app.use(async (req, res, next) => {
+  try {
+    await connection();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.use(process.env.API_VERSION, UserRoutes);
 app.use(process.env.API_VERSION, ProductRotues);
