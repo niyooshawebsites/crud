@@ -16,8 +16,8 @@ dotenv.config();
 
 const bucketName = process.env.BUCKET_NAME;
 const bucketRegion = process.env.BUCKET_REGION;
-const bucketAccessKey = process.env.AWS_ACCESS_KEY;
-const bucketSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+const bucketAccessKey = process.env.ACCESS_KEY;
+const bucketSecretAccessKey = process.env.SECRET_ACCESS;
 
 const s3 = new S3Client({
   credentials: {
