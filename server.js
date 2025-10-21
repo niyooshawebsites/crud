@@ -56,7 +56,4 @@ app.use((error, req, res, next) => {
   }
 });
 
-// listen on PORT
-app.listen(PORT, () => {
-  console.log(colors.bgYellow(`The app is running on port ${PORT}`));
-});
+module.exports = app;
